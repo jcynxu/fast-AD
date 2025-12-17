@@ -1,0 +1,14 @@
+torch>=1.12.0
+torchvision>=0.13.0
+numpy>=1.21.0
+pyyaml>=6.0
+tqdm>=4.64.0
+pillow>=9.0.0
+
+# Optional: for better diffusion model support
+# diffusers>=0.20.0
+# transformers>=4.20.0
+
+# Optional: for evaluation metrics
+# pytorch-fid>=0.3.0
+
