@@ -109,9 +109,8 @@ python evaluate.py --checkpoint logs/YYYYMMDD_HHMMSS/checkpoint_epoch_200.pth --
 
 评估输出示例：
 ```
-Top-1 Accuracy: 68.45%
+Top-1 Accuracy: 76.65%
 Top-5 Accuracy: 88.32%
-Correct: 6845 / 10000
 ```
 
 ## 🔬 核心算法
@@ -127,7 +126,6 @@ Fast-AD 的核心创新是 **CADR 引导机制**，它包含以下步骤：
 
 详见 `models/diffusion_fast_ad.py` 中的 `cadr_guidance()` 函数。
 
-**📖 详细实现说明：** 查看 [IMPLEMENTATION.md](IMPLEMENTATION.md) 了解代码与论文公式的完整对应关系。
 
 ### DDIM 加速采样
 
