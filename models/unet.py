@@ -1,6 +1,7 @@
 """
-UNet 模型定义：用于扩散模型
-简化版本，实际使用时建议使用 diffusers 库或更完整的实现
+UNet for diffusion (simplified).
+
+For real experiments, consider using a stronger UNet (e.g., from `diffusers`).
 """
 
 import torch
@@ -10,7 +11,7 @@ import math
 
 
 class SinusoidalPositionEmbeddings(nn.Module):
-    """时间步位置编码"""
+    """Sinusoidal timestep embeddings."""
     def __init__(self, dim):
         super().__init__()
         self.dim = dim
@@ -26,7 +27,7 @@ class SinusoidalPositionEmbeddings(nn.Module):
 
 
 class Block(nn.Module):
-    """UNet 基础块"""
+    """Basic UNet block."""
     def __init__(self, in_ch, out_ch, time_emb_dim, up=False):
         super().__init__()
         self.time_mlp = nn.Linear(time_emb_dim, out_ch)
@@ -58,8 +59,10 @@ class Block(nn.Module):
 
 class SimpleUNet(nn.Module):
     """
-    简化的 UNet 用于扩散模型
-    注意：这是一个基础实现，实际使用时建议使用更完整的 UNet 或 diffusers 库
+    A minimal UNet for diffusion.
+
+    Note: this is a toy implementation meant for structure and integration;
+    swap it with a production-grade diffusion backbone for actual results.
     """
     def __init__(self, image_channels=3, time_emb_dim=32):
         super().__init__()
@@ -93,11 +96,11 @@ class SimpleUNet(nn.Module):
         # Output
         self.output = nn.Conv2d(64, image_channels, 1)
         
-        # 初始化 alphas_cumprod (用于 DDIM 采样)
+        # Precompute alphas_cumprod for DDIM sampling
         self.register_buffer('alphas_cumprod', self._linear_beta_schedule(1000))
         
     def _linear_beta_schedule(self, timesteps, beta_start=0.0001, beta_end=0.02):
-        """线性 beta schedule"""
+        """Linear beta schedule."""
         betas = torch.linspace(beta_start, beta_end, timesteps)
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
@@ -106,9 +109,9 @@ class SimpleUNet(nn.Module):
     def forward(self, x, timestep, context=None):
         """
         Args:
-            x: 输入图像 [B, C, H, W]
-            timestep: 时间步 [B]
-            context: 可选的上下文嵌入 (如文本提示)
+            x: input image tensor [B, C, H, W]
+            timestep: timestep tensor [B]
+            context: optional conditioning (e.g., text embeddings)
         """
         # Time embedding
         t = self.time_mlp(timestep)
@@ -138,7 +141,7 @@ class SimpleUNet(nn.Module):
 
 class UNet(nn.Module):
     """
-    UNet 包装类，兼容不同的接口
+    UNet wrapper to keep a stable interface.
     """
     def __init__(self, image_channels=3, time_emb_dim=32, num_classes=None):
         super().__init__()
@@ -148,9 +151,9 @@ class UNet(nn.Module):
     def forward(self, x, timestep, context=None):
         """
         Args:
-            x: 输入图像 [B, C, H, W]
-            timestep: 时间步 [B] 或 int
-            context: 可选的上下文嵌入
+            x: input tensor [B, C, H, W]
+            timestep: timestep [B] or int
+            context: optional conditioning
         """
         if isinstance(timestep, int):
             timestep = torch.full((x.size(0),), timestep, device=x.device, dtype=torch.long)

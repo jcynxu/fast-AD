@@ -1,5 +1,5 @@
 """
-Fast-AD 主入口：解析参数和初始化训练
+Fast-AD entry point: argument parsing and training setup.
 """
 
 import argparse
@@ -15,14 +15,14 @@ from trainer import train_fast_ad
 
 
 def load_config(config_path: str) -> dict:
-    """加载配置文件"""
+    """Load a YAML config file."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return config
 
 
 def load_pretrained_model(model: nn.Module, checkpoint_path: str, device: str = 'cuda'):
-    """加载预训练模型"""
+    """Load a pretrained checkpoint into `model`."""
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path, map_location=device)
         if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
@@ -38,20 +38,11 @@ def load_pretrained_model(model: nn.Module, checkpoint_path: str, device: str = 
 
 
 def create_models(config: dict, device: str = 'cuda'):
-    """
-    创建 Teacher, Student 和 Diffusion 模型
-    
-    Args:
-        config: 配置字典
-        device: 计算设备
-        
-    Returns:
-        teacher, student, diffusion: 三个模型
-    """
+    """Create Teacher / Student / Diffusion models from config."""
     distillation_config = config.get('distillation', {})
     num_classes = distillation_config.get('num_classes', 100)
     
-    # Teacher 模型
+    # Teacher
     teacher_arch = distillation_config.get('teacher_arch', 'resnet34')
     if teacher_arch == 'resnet34':
         teacher = resnet34(num_classes=num_classes)
@@ -60,7 +51,7 @@ def create_models(config: dict, device: str = 'cuda'):
     else:
         raise ValueError(f"Unsupported teacher architecture: {teacher_arch}")
     
-    # Student 模型
+    # Student
     student_arch = distillation_config.get('student_arch', 'resnet18')
     if student_arch == 'resnet18':
         student = resnet18(num_classes=num_classes)
@@ -69,11 +60,11 @@ def create_models(config: dict, device: str = 'cuda'):
     else:
         raise ValueError(f"Unsupported student architecture: {student_arch}")
     
-    # Diffusion 模型 (UNet)
+    # Diffusion (UNet)
     image_size = distillation_config.get('image_size', [32, 32])
     diffusion = UNet(image_channels=3, time_emb_dim=32)
     
-    # 加载预训练权重 (如果提供了路径)
+    # Optional pretrained weights
     teacher_path = distillation_config.get('teacher_checkpoint', None)
     if teacher_path:
         teacher = load_pretrained_model(teacher, teacher_path, device)
@@ -100,11 +91,11 @@ def main():
     
     args = parser.parse_args()
     
-    # 设置设备
+    # Device
     device = args.device if torch.cuda.is_available() and args.device == 'cuda' else 'cpu'
     print(f"Using device: {device}")
     
-    # 加载配置
+    # Config
     if os.path.exists(args.config):
         config = load_config(args.config)
         print(f"Loaded config from {args.config}")
@@ -136,21 +127,21 @@ def main():
             }
         }
     
-    # 创建模型
+    # Models
     print("Creating models...")
     teacher, student, diffusion = create_models(config, device)
     
-    # 如果提供了 resume 路径，加载 student 模型
+    # Optionally resume student weights
     if args.resume:
         student = load_pretrained_model(student, args.resume, device)
     
-    # 获取训练参数
+    # Training params
     distillation_config = config.get('distillation', {})
     epochs = args.epochs if args.epochs is not None else distillation_config.get('epochs', 200)
     num_classes = distillation_config.get('num_classes', 100)
     image_size = tuple(distillation_config.get('image_size', [32, 32]))
     
-    # 开始训练
+    # Train
     print("Starting training...")
     trainer = train_fast_ad(
         teacher=teacher,

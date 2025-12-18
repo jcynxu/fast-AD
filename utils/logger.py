@@ -1,5 +1,5 @@
 """
-训练日志与可视化工具
+Training logger and checkpoint utilities.
 """
 
 import os
@@ -10,13 +10,9 @@ import torch
 
 
 class Logger:
-    """训练日志记录器"""
+    """Simple experiment logger (JSON metrics + checkpoints)."""
     def __init__(self, log_dir: str = './logs', exp_name: Optional[str] = None):
-        """
-        Args:
-            log_dir: 日志目录
-            exp_name: 实验名称
-        """
+        """Create a new log directory under `log_dir/exp_name`."""
         if exp_name is None:
             exp_name = datetime.now().strftime('%Y%m%d_%H%M%S')
         
@@ -27,38 +23,24 @@ class Logger:
         self.metrics_history = []
         
     def log(self, epoch: int, metrics: Dict[str, float]):
-        """
-        记录训练指标
-        
-        Args:
-            epoch: 当前 epoch
-            metrics: 指标字典
-        """
+        """Append metrics for an epoch and persist to `metrics.json`."""
         log_entry = {
             'epoch': epoch,
             **metrics
         }
         self.metrics_history.append(log_entry)
         
-        # 保存到文件
+        # Persist to disk
         with open(self.metrics_file, 'w') as f:
             json.dump(self.metrics_history, f, indent=2)
         
-        # 打印到控制台
+        # Print to console
         metrics_str = ', '.join([f'{k}: {v:.4f}' for k, v in metrics.items()])
         print(f"Epoch {epoch}: {metrics_str}")
     
     def save_checkpoint(self, model: torch.nn.Module, optimizer: torch.optim.Optimizer,
                        epoch: int, filepath: Optional[str] = None):
-        """
-        保存模型检查点
-        
-        Args:
-            model: 模型
-            optimizer: 优化器
-            epoch: 当前 epoch
-            filepath: 保存路径
-        """
+        """Save a model checkpoint (model + optimizer + epoch)."""
         if filepath is None:
             filepath = os.path.join(self.log_dir, f'checkpoint_epoch_{epoch}.pth')
         
@@ -72,14 +54,7 @@ class Logger:
     
     def load_checkpoint(self, filepath: str, model: torch.nn.Module, 
                        optimizer: Optional[torch.optim.Optimizer] = None):
-        """
-        加载模型检查点
-        
-        Args:
-            filepath: 检查点路径
-            model: 模型
-            optimizer: 优化器 (可选)
-        """
+        """Load a checkpoint into model (and optimizer if provided)."""
         checkpoint = torch.load(filepath)
         model.load_state_dict(checkpoint['model_state_dict'])
         if optimizer is not None and 'optimizer_state_dict' in checkpoint:

@@ -1,32 +1,32 @@
-# Fast-AD Configuration for CIFAR-100
+# Fast-AD configuration for CIFAR-100
 
-# Distillation Settings
+# Distillation settings
 distillation:
-  teacher_arch: "resnet34"          # Teacher 网络架构
-  student_arch: "resnet18"          # Student 网络架构
-  num_classes: 100                  # 类别数 (CIFAR-100)
-  image_size: [32, 32]              # 图像尺寸 [H, W]
-  epochs: 200                       # 训练轮数
-  buffer_size: 4096                 # ReplayBuffer 最大容量
-  lr: 0.1                           # 初始学习率
-  milestones: [100, 150]            # 学习率衰减的 epoch
-  synthesis_batch_size: 64          # 每个 epoch 合成的图像数量
-  train_batch_size: 64              # 训练批次大小
-  train_iterations: 100             # 每个 epoch 的训练迭代次数
-  kd_temperature: 4.0                # 知识蒸馏温度 τ_kd (公式 9)
+  teacher_arch: "resnet34"          # Teacher architecture
+  student_arch: "resnet18"          # Student architecture
+  num_classes: 100                  # Number of classes (CIFAR-100)
+  image_size: [32, 32]              # Image size [H, W]
+  epochs: 200                       # Training epochs
+  buffer_size: 4096                 # ReplayBuffer capacity
+  lr: 0.1                           # Initial learning rate
+  milestones: [100, 150]            # LR decay epochs
+  synthesis_batch_size: 64          # Synthesized images per epoch
+  train_batch_size: 64              # Student update batch size
+  train_iterations: 100             # Student updates per epoch
+  kd_temperature: 4.0               # Distillation temperature τ_kd (Eq. 9)
   
-  # 预训练模型路径 (可选)
+  # Optional pretrained checkpoints
   # teacher_checkpoint: "path/to/teacher.pth"
   # diffusion_checkpoint: "path/to/diffusion.pth"
 
-# Fast-AD Algorithm Parameters
+# Fast-AD algorithm parameters
 fast_ad:
-  lambda_max: 1.5                   # 最大引导强度
-  eta: 0.1                          # 梯度缩放因子 (Gradient Scaling Factor)
-  tau_ent: 0.4                      # 熵阈值 (CIFAR-100为0.4, ImageNet为0.6)
-  k_sigmoid: 10.0                   # Sigmoid 的陡峭程度
-  ddim_steps: 50                    # DDIM 采样步数 (20x 加速)
-  xi: 1e-6                          # 梯度归一化时的数值稳定常数
-  gamma: 1.0                        # CE Loss 的权重
-  T: 1000                           # 原始扩散模型的总步数
+  lambda_max: 1.5                   # Maximum rectification strength
+  eta: 0.1                          # Gradient scaling factor
+  tau_ent: 0.4                      # Entropy threshold (CIFAR-100: 0.4, ImageNet: 0.6)
+  k_sigmoid: 10.0                   # Sigmoid steepness
+  ddim_steps: 50                    # Number of DDIM steps (~20x speedup vs 1000-step DDPM)
+  xi: 1e-6                          # Epsilon for numerical stability in grad norm
+  gamma: 1.0                        # CE loss weight
+  T: 1000                           # Original diffusion timesteps
 

@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# Fast-AD 训练启动脚本
-# Usage: bash scripts/run_distill.sh [config_path] [epochs] [device]
+# Fast-AD training launcher
+# Usage: bash scripts/run_distill.sh [config_path] [epochs] [device] [log_dir]
 
-# 默认参数
+# Defaults
 CONFIG_PATH=${1:-"configs/cifar100_config.yaml"}
 EPOCHS=${2:-200}
 DEVICE=${3:-"cuda"}
 LOG_DIR=${4:-"./logs"}
 
-# 检查配置文件是否存在
+# Check whether config exists
 if [ ! -f "$CONFIG_PATH" ]; then
     echo "Warning: Config file $CONFIG_PATH not found, using default config"
     CONFIG_PATH=""
 fi
 
-# 运行训练
+# Run training
 echo "Starting Fast-AD training..."
 echo "Config: $CONFIG_PATH"
 echo "Epochs: $EPOCHS"

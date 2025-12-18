@@ -1,5 +1,5 @@
 """
-ResNet 模型定义：用于 Teacher 和 Student 网络
+ResNet models for teacher and student classifiers.
 """
 
 import torch
@@ -94,16 +94,16 @@ class ResNet(nn.Module):
 
 
 def resnet18(num_classes=100):
-    """ResNet-18"""
+    """ResNet-18."""
     return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
 
 
 def resnet34(num_classes=100):
-    """ResNet-34"""
+    """ResNet-34."""
     return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=num_classes)
 
 
 def resnet50(num_classes=100):
-    """ResNet-50"""
+    """ResNet-50."""
     return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=num_classes)
 

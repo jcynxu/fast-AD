@@ -1,5 +1,5 @@
 """
-评估指标：FID, Accuracy 等
+Evaluation utilities: accuracy and (optional) FID helpers.
 """
 
 import torch
@@ -10,15 +10,15 @@ import numpy as np
 
 def compute_accuracy(logits: torch.Tensor, targets: torch.Tensor, topk: tuple = (1,)) -> list:
     """
-    计算分类准确率
-    
+    Compute classification accuracy.
+
     Args:
-        logits: 模型输出 [B, C]
-        targets: 真实标签 [B]
-        topk: 计算 top-k 准确率
-        
+        logits: model logits [B, C]
+        targets: ground-truth labels [B]
+        topk: compute top-k accuracies
+
     Returns:
-        accuracies: top-k 准确率列表
+        accuracies: list of top-k accuracies (percent)
     """
     with torch.no_grad():
         maxk = max(topk)
@@ -37,24 +37,26 @@ def compute_accuracy(logits: torch.Tensor, targets: torch.Tensor, topk: tuple = 
 
 def compute_fid(real_features: torch.Tensor, fake_features: torch.Tensor) -> float:
     """
-    计算 FID (Fréchet Inception Distance)
-    简化版本，实际使用时建议使用 pytorch-fid 库
-    
+    Compute FID (Fréchet Inception Distance).
+
+    Note: this is a simplified implementation. For real evaluation, prefer a
+    well-tested library (e.g., `pytorch-fid`) and a standard feature extractor.
+
     Args:
-        real_features: 真实图像的特征 [N, D]
-        fake_features: 生成图像的特征 [N, D]
-        
+        real_features: features from real images [N, D]
+        fake_features: features from generated images [N, D]
+
     Returns:
-        fid: FID 分数
+        fid: FID score (lower is better)
     """
-    # 计算均值和协方差
+    # Mean and covariance
     mu1 = real_features.mean(dim=0)
     mu2 = fake_features.mean(dim=0)
     
     sigma1 = torch.cov(real_features.T)
     sigma2 = torch.cov(fake_features.T)
     
-    # 计算 FID
+    # FID formula
     diff = mu1 - mu2
     covmean = torch.sqrt(sigma1 @ sigma2)
     
@@ -65,15 +67,15 @@ def compute_fid(real_features: torch.Tensor, fake_features: torch.Tensor) -> flo
 def evaluate_model(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, 
                    device: str = 'cuda') -> dict:
     """
-    评估模型性能
-    
+    Evaluate a classifier on a dataloader.
+
     Args:
-        model: 待评估模型
-        dataloader: 数据加载器
-        device: 计算设备
-        
+        model: model to evaluate
+        dataloader: data loader
+        device: device
+
     Returns:
-        metrics: 评估指标字典
+        metrics: dict with top-1/top-5 and counts
     """
     model.eval()
     correct = 0
